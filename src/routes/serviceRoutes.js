@@ -1,4 +1,4 @@
-import express from 'express';
+import express from "express";
 import {
   getAllServices,
   getServiceById,
@@ -6,24 +6,30 @@ import {
   updateService,
   deleteService,
   getMyServices,
-  uploadImageMiddleware
-} from '../controllers/serviceController.js';
+  uploadImageMiddleware,
+} from "../controllers/serviceController.js";
 
-import verifyToken from '../middlewares/verifyToken.js';
-import { authorizeService } from '../middlewares/authorizeService.js';
+import verifyToken from "../middlewares/verifyToken.js";
+import { authorizeService } from "../middlewares/authorizeService.js";
 
 const router = express.Router();
 
-router.get('/', getAllServices);
+router.get("/", getAllServices);
 
-router.get('/:id', getServiceById);
+router.get("/:id", getServiceById);
 
-router.get('/my', verifyToken, authorizeService, getMyServices);
+router.get("/my", verifyToken, authorizeService, getMyServices);
 
-router.post('/', verifyToken, authorizeService, uploadImageMiddleware, createService);
+router.post(
+  "/",
+  verifyToken,
+  authorizeService,
+  uploadImageMiddleware,
+  createService
+);
 
-router.put('/:id', verifyToken, authorizeService, updateService);
+router.put("/:id", verifyToken, authorizeService, updateService);
 
-router.delete('/:id', verifyToken, authorizeService, deleteService);
+router.delete("/:id", verifyToken, authorizeService, deleteService);
 
 export default router;

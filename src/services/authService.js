@@ -1,6 +1,6 @@
-import { PrismaClient } from '@prisma/client';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { PrismaClient } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
 const JWT_SECRET = process.env.JWT_SECRET;
@@ -19,7 +19,7 @@ export async function validateLogin(email, password) {
   const isPasswordValid = await bcrypt.compare(password, user.password);
   if (!isPasswordValid) return null;
   const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
-    expiresIn: '8h',
+    expiresIn: "8h",
   });
   return { token, user };
 }

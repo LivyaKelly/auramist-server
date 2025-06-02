@@ -1,19 +1,20 @@
-import { PrismaClient } from '@prisma/client';
-import multer from 'multer';
+import { PrismaClient } from "@prisma/client";
+import multer from "multer";
 
 const prisma = new PrismaClient();
 
-// Configura o upload de imagem local (destino: /uploads)
-const upload = multer({ dest: 'uploads/' });
-export const uploadImageMiddleware = upload.single('image');
+const upload = multer({ dest: "uploads/" });
+export const uploadImageMiddleware = upload.single("image");
 
-// ✅ Criar novo serviço
 export async function createService(req, res) {
   try {
-    const { name, description, urlImage, duration, price, professionalId } = req.body;
+    const { name, description, urlImage, duration, price, professionalId } =
+      req.body;
 
     if (!name || !urlImage || !duration || !price || !professionalId) {
-      return res.status(400).json({ message: 'Todos os campos obrigatórios devem ser preenchidos.' });
+      return res.status(400).json({
+        message: "Todos os campos obrigatórios devem ser preenchidos.",
+      });
     }
 
     const newService = await prisma.service.create({
@@ -27,53 +28,56 @@ export async function createService(req, res) {
       },
     });
 
-    res.status(201).json({ message: 'Serviço criado com sucesso', servico: newService });
+    res
+      .status(201)
+      .json({ message: "Serviço criado com sucesso", servico: newService });
   } catch (error) {
-    console.error('Erro ao criar serviço:', error);
-    res.status(500).json({ message: 'Erro ao criar serviço.' });
+    console.error("Erro ao criar serviço:", error);
+    res.status(500).json({ message: "Erro ao criar serviço." });
   }
 }
 
-// ✅ Buscar todos os serviços (público)
 export async function getAllServices(req, res) {
   try {
     const services = await prisma.service.findMany();
     res.json(services);
   } catch (error) {
-    console.error('Erro ao listar serviços:', error);
-    res.status(500).json({ message: 'Erro ao listar serviços.' });
+    console.error("Erro ao listar serviços:", error);
+    res.status(500).json({ message: "Erro ao listar serviços." });
   }
 }
 
-// ✅ Buscar serviço por ID
 export async function getServiceById(req, res) {
   try {
     const serviceId = parseInt(req.params.id);
     if (isNaN(serviceId)) {
-      return res.status(400).json({ message: 'ID inválido.' });
+      return res.status(400).json({ message: "ID inválido." });
     }
 
-    const service = await prisma.service.findUnique({ where: { id: serviceId } });
+    const service = await prisma.service.findUnique({
+      where: { id: serviceId },
+    });
     if (!service) {
-      return res.status(404).json({ message: 'Serviço não encontrado.' });
+      return res.status(404).json({ message: "Serviço não encontrado." });
     }
 
     res.json(service);
   } catch (error) {
-    console.error('Erro ao buscar serviço:', error);
-    res.status(500).json({ message: 'Erro ao buscar serviço.' });
+    console.error("Erro ao buscar serviço:", error);
+    res.status(500).json({ message: "Erro ao buscar serviço." });
   }
 }
 
-// ✅ Atualizar serviço
 export async function updateService(req, res) {
   try {
     const serviceId = parseInt(req.params.id);
     const { name, description, duration, price, professionalId } = req.body;
 
-    const service = await prisma.service.findUnique({ where: { id: serviceId } });
+    const service = await prisma.service.findUnique({
+      where: { id: serviceId },
+    });
     if (!service) {
-      return res.status(404).json({ message: 'Serviço não encontrado.' });
+      return res.status(404).json({ message: "Serviço não encontrado." });
     }
 
     const updated = await prisma.service.update({
@@ -87,43 +91,45 @@ export async function updateService(req, res) {
       },
     });
 
-    res.json({ message: 'Serviço atualizado com sucesso', servico: updated });
+    res.json({ message: "Serviço atualizado com sucesso", servico: updated });
   } catch (error) {
-    console.error('Erro ao atualizar serviço:', error);
-    res.status(500).json({ message: 'Erro ao atualizar serviço.' });
+    console.error("Erro ao atualizar serviço:", error);
+    res.status(500).json({ message: "Erro ao atualizar serviço." });
   }
 }
 
-// ✅ Deletar serviço
 export async function deleteService(req, res) {
   try {
     const serviceId = parseInt(req.params.id);
 
-    const service = await prisma.service.findUnique({ where: { id: serviceId } });
+    const service = await prisma.service.findUnique({
+      where: { id: serviceId },
+    });
     if (!service) {
-      return res.status(404).json({ message: 'Serviço não encontrado.' });
+      return res.status(404).json({ message: "Serviço não encontrado." });
     }
 
     await prisma.service.delete({ where: { id: serviceId } });
-    res.json({ message: 'Serviço deletado com sucesso.' });
+    res.json({ message: "Serviço deletado com sucesso." });
   } catch (error) {
-    console.error('Erro ao deletar serviço:', error);
-    res.status(500).json({ message: 'Erro ao deletar serviço.' });
+    console.error("Erro ao deletar serviço:", error);
+    res.status(500).json({ message: "Erro ao deletar serviço." });
   }
 }
 
-// ✅ Buscar serviços do profissional logado
 export async function getMyServices(req, res) {
   try {
     const professionalId = req.userId;
     if (!professionalId) {
-      return res.status(401).json({ message: 'Usuário não autenticado.' });
+      return res.status(401).json({ message: "Usuário não autenticado." });
     }
 
-    const services = await prisma.service.findMany({ where: { professionalId } });
+    const services = await prisma.service.findMany({
+      where: { professionalId },
+    });
     res.json(services);
   } catch (error) {
-    console.error('Erro ao buscar serviços do profissional:', error);
-    res.status(500).json({ message: 'Erro ao buscar serviços.' });
+    console.error("Erro ao buscar serviços do profissional:", error);
+    res.status(500).json({ message: "Erro ao buscar serviços." });
   }
 }

@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -7,7 +7,9 @@ export async function createReview(req, res) {
     const { rating, comment, clientId } = req.body;
 
     if (!rating || !clientId) {
-      return res.status(400).json({ message: 'Nota e ID do cliente são obrigatórios.' });
+      return res
+        .status(400)
+        .json({ message: "Nota e ID do cliente são obrigatórios." });
     }
 
     const review = await prisma.review.create({
@@ -20,8 +22,8 @@ export async function createReview(req, res) {
 
     res.status(201).json(review);
   } catch (error) {
-    console.error('Erro ao criar avaliação:', error);
-    res.status(500).json({ message: 'Erro ao criar avaliação.' });
+    console.error("Erro ao criar avaliação:", error);
+    res.status(500).json({ message: "Erro ao criar avaliação." });
   }
 }
 
@@ -40,7 +42,7 @@ export async function getAllReviews(req, res) {
 
     res.json(reviews);
   } catch (error) {
-    console.error('Erro ao listar avaliações:', error);
-    res.status(500).json({ message: 'Erro ao listar avaliações.' });
+    console.error("Erro ao listar avaliações:", error);
+    res.status(500).json({ message: "Erro ao listar avaliações." });
   }
 }

@@ -1,11 +1,13 @@
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 
 export async function createAppointment(req, res) {
   try {
     const { clientId, professionalId, serviceId, date, time } = req.body;
     if (!clientId || !professionalId || !serviceId || !date || !time) {
-      return res.status(400).json({ mensagem: 'Todos os campos são obrigatórios.' });
+      return res
+        .status(400)
+        .json({ mensagem: "Todos os campos são obrigatórios." });
     }
 
     const conflict = await prisma.appointment.findFirst({
@@ -16,7 +18,9 @@ export async function createAppointment(req, res) {
       },
     });
     if (conflict) {
-      return res.status(400).json({ mensagem: 'Conflito de horário para este profissional.' });
+      return res
+        .status(400)
+        .json({ mensagem: "Conflito de horário para este profissional." });
     }
 
     const newAppointment = await prisma.appointment.create({
@@ -26,30 +30,42 @@ export async function createAppointment(req, res) {
         serviceId,
         date: new Date(date),
         time,
-        status: 'PENDENTE',
+        status: "PENDENTE",
       },
     });
 
-    return res.status(201).json({ mensagem: 'Agendamento criado com sucesso!', agendamento: newAppointment });
+    return res
+      .status(201)
+      .json({
+        mensagem: "Agendamento criado com sucesso!",
+        agendamento: newAppointment,
+      });
   } catch (err) {
-    return res.status(500).json({ mensagem: 'Erro ao criar agendamento.', error: err });
+    return res
+      .status(500)
+      .json({ mensagem: "Erro ao criar agendamento.", error: err });
   }
 }
 
 export async function getAllAppointments(req, res) {
   try {
     const userId = req.userId;
-    if (!userId) return res.status(401).json({ mensagem: 'Usuário não autenticado.' });
+    if (!userId)
+      return res.status(401).json({ mensagem: "Usuário não autenticado." });
 
     const appointments = await prisma.appointment.findMany({
       where: { clientId: userId },
       include: { service: true, professional: true },
-      orderBy: { date: 'asc' },
+      orderBy: { date: "asc" },
     });
 
-    return res.status(200).json({ mensagem: 'Lista de agendamentos', agendamentos: appointments });
+    return res
+      .status(200)
+      .json({ mensagem: "Lista de agendamentos", agendamentos: appointments });
   } catch (err) {
-    return res.status(500).json({ mensagem: 'Erro ao listar agendamentos.', error: err });
+    return res
+      .status(500)
+      .json({ mensagem: "Erro ao listar agendamentos.", error: err });
   }
 }
 
@@ -57,11 +73,16 @@ export async function getAppointmentById(req, res) {
   try {
     const id = parseInt(req.params.id);
     const appointment = await prisma.appointment.findUnique({ where: { id } });
-    if (!appointment) return res.status(404).json({ mensagem: 'Agendamento não encontrado.' });
+    if (!appointment)
+      return res.status(404).json({ mensagem: "Agendamento não encontrado." });
 
-    return res.status(200).json({ mensagem: 'Agendamento encontrado.', agendamento: appointment });
+    return res
+      .status(200)
+      .json({ mensagem: "Agendamento encontrado.", agendamento: appointment });
   } catch (err) {
-    return res.status(500).json({ mensagem: 'Erro ao buscar agendamento.', error: err });
+    return res
+      .status(500)
+      .json({ mensagem: "Erro ao buscar agendamento.", error: err });
   }
 }
 
@@ -77,9 +98,16 @@ export async function updateAppointment(req, res) {
         status,
       },
     });
-    return res.status(200).json({ mensagem: 'Agendamento atualizado com sucesso!', agendamento: appointment });
+    return res
+      .status(200)
+      .json({
+        mensagem: "Agendamento atualizado com sucesso!",
+        agendamento: appointment,
+      });
   } catch (err) {
-    return res.status(500).json({ mensagem: 'Erro ao atualizar agendamento.', error: err });
+    return res
+      .status(500)
+      .json({ mensagem: "Erro ao atualizar agendamento.", error: err });
   }
 }
 
@@ -87,9 +115,13 @@ export async function deleteAppointment(req, res) {
   try {
     const id = parseInt(req.params.id);
     await prisma.appointment.delete({ where: { id } });
-    return res.status(200).json({ mensagem: 'Agendamento cancelado com sucesso!' });
+    return res
+      .status(200)
+      .json({ mensagem: "Agendamento cancelado com sucesso!" });
   } catch (err) {
-    return res.status(500).json({ mensagem: 'Erro ao cancelar agendamento.', error: err });
+    return res
+      .status(500)
+      .json({ mensagem: "Erro ao cancelar agendamento.", error: err });
   }
 }
 
@@ -102,7 +134,7 @@ export const getAppointmentsByClient = async (req, res) => {
         service: true,
         professional: { select: { name: true } },
       },
-      orderBy: { date: 'desc' },
+      orderBy: { date: "desc" },
     });
     res.status(200).json(appointments);
   } catch (error) {
