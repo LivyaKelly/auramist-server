@@ -1,64 +1,34 @@
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcryptjs";
+import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
 const prisma = new PrismaClient();
-const JWT_SECRET = process.env.JWT_SECRET;
 
 export async function register(req, res) {
   try {
-    const { name, email, password, phone, role, hasCompletedService } =
-      req.body;
-
-    if (!name || !email || !password) {
-      return res
-        .status(400)
-        .json({ message: "Nome, e-mail e senha são obrigatórios." });
-    }
+    const { name, email, password, phone, role } = req.body;
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
-      return res.status(400).json({ message: "E-mail já está em uso." });
+      return res.status(400).json({ message: "Email já cadastrado." });
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await prisma.user.create({
+    const newUser = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        phone: phone || null,
-        role: role || "CLIENT",
-        hasCompletedService: hasCompletedService ?? false,
+        phone,
+        role,
       },
     });
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
-      expiresIn: "24h",
-    });
-
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-
-    return res.status(201).json({
-      message: "Usuário registrado com sucesso!",
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        role: user.role,
-      },
-    });
+    res.status(201).json({ message: "Usuário registrado com sucesso!", user: newUser });
   } catch (error) {
-    console.error("Erro no registro:", error);
-    return res
-      .status(500)
-      .json({ message: "Erro no registro.", error: error.message });
+    console.error("Erro ao registrar:", error);
+    res.status(500).json({ message: "Erro ao registrar usuário." });
   }
 }
 
@@ -66,46 +36,62 @@ export async function login(req, res) {
   try {
     const { email, password } = req.body;
 
-    if (!email || !password) {
-      return res
-        .status(400)
-        .json({ message: "E-mail e senha são obrigatórios." });
-    }
-
     const user = await prisma.user.findUnique({ where: { email } });
     if (!user) {
       return res.status(404).json({ message: "Usuário não encontrado." });
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.password);
-    if (!isPasswordValid) {
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
       return res.status(401).json({ message: "Senha incorreta." });
     }
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, JWT_SECRET, {
-      expiresIn: "24h",
+    const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
     });
 
-    res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 24 * 60 * 60 * 1000,
-    });
-
-    return res.status(200).json({
-      message: "Login realizado com sucesso!",
-      user: {
-        id: user.id,
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        sameSite: "Lax",
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+      })
+      .status(200)
+      .json({
+        message: "Login realizado com sucesso!",
         name: user.name,
-        email: user.email,
         role: user.role,
+      });
+  } catch (error) {
+    console.error("Erro ao fazer login:", error);
+    res.status(500).json({ message: "Erro ao fazer login." });
+  }
+}
+
+export async function getCurrentUser(req, res) {
+  try {
+    if (!req.userId) {
+      return res.status(401).json({ message: "Não autorizado." });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        phone: true,
+        role: true,
       },
     });
+
+    if (!user) {
+      return res.status(404).json({ message: "Usuário não encontrado." });
+    }
+
+    res.status(200).json(user);
   } catch (error) {
-    console.error("Erro no login:", error);
-    return res
-      .status(500)
-      .json({ message: "Erro no login.", error: error.message });
+    console.error("Erro ao buscar usuário logado:", error);
+    res.status(500).json({ message: "Erro interno ao buscar usuário." });
   }
 }

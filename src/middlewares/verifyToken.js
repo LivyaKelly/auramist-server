@@ -6,7 +6,7 @@ const verifyToken = (req, res, next) => {
   if (!token) {
     return res.status(401).json({
       auth: false,
-      message: "Token não fornecido.",
+      message: "Token não fornecido.",  
     });
   }
 
@@ -23,7 +23,7 @@ const verifyToken = (req, res, next) => {
     req.userRole = decoded.role;
     next();
     console.log(
-      "🔒 Token verificado! userId:",
+      "Token verificado! userId:",
       decoded.userId,
       "| role:",
       decoded.role

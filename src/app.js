@@ -15,13 +15,13 @@ import logger from './middlewares/logger.js';
 import verifyToken from './middlewares/verifyToken.js';
 
 
-import authRoutes from './routes/auth.js';
+import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/usersRoutes.js';
 import adminRoutes from './routes/adminRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import serviceRoutes from './routes/serviceRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
-import uploadImageRouter from './routes/upload-image.js';
+import uploadRoutes from "./uploads/upload-image.js";
 
 
 import { PrismaClient } from '@prisma/client';
@@ -32,8 +32,8 @@ const app = express();
 
 app.use(express.json());
 app.use(cors({
-  origin: 'http://localhost:3000',
-  credentials: true
+  origin: [process.env.FRONTEND_URL, 'http://localhost:3000'],
+  credentials: true,
 }));
 app.use(cookieParser());
 app.use(logger);
@@ -42,7 +42,7 @@ app.use(logger);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
-app.use('/api/upload-image', uploadImageRouter);
+app.use("/api/upload-image", uploadRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admins', adminRoutes);

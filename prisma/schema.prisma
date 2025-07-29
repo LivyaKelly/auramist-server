@@ -4,6 +4,7 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -14,18 +15,20 @@ datasource db {
 }
 
 model User {
-  id                  Int      @id @default(autoincrement())
+  id                  Int       @id @default(autoincrement())
   name                String
-  email               String   @unique
+  email               String    @unique
   password            String
   phone               String?
-  role                Role     @default(CLIENT)
-  hasCompletedService Boolean  @default(false)
-  createdAt           DateTime @default(now())
+  role                Role      @default(CLIENT)
+  hasCompletedService Boolean   @default(false)
+  createdAt           DateTime  @default(now())
   reviews             Review[]
 
   clientAppointments       Appointment[] @relation("ClientAppointments")
   professionalAppointments Appointment[] @relation("ProfessionalAppointments")
+
+  services                Service[] @relation("ProfessionalServices")
 }
 
 model Review {
@@ -38,14 +41,19 @@ model Review {
 }
 
 model Service {
-  id             Int           @id @default(autoincrement())
-  name           String
-  description    String
-  urlImage       String
-  duration       Int
-  price          Float
-  professionalId Int
-  appointments   Appointment[]
+  id               Int           @id @default(autoincrement())
+  name             String
+  description      String
+  urlImage         String
+  duration         Int
+  price            Float
+  professionalId   Int
+  appointments     Appointment[]
+  professionalName String?
+
+  professional     User          @relation("ProfessionalServices", fields: [professionalId], references: [id])
+
+  createdAt        DateTime      @default(now())
 }
 
 enum Status {
