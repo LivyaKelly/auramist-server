@@ -21,7 +21,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import reviewRoutes from './routes/reviewRoutes.js';
 import serviceRoutes from './routes/serviceRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
-import uploadRoutes from "./uploads/upload-image.js";
+// import uploadRoutes from "./uploads/upload-image.js";
 
 
 import { PrismaClient } from '@prisma/client';
