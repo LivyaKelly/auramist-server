@@ -25,7 +25,9 @@ export async function register(req, res) {
       },
     });
 
-    res.status(201).json({ message: "Usuário registrado com sucesso!", user: newUser });
+    res
+      .status(201)
+      .json({ message: "Usuário registrado com sucesso!", user: newUser });
   } catch (error) {
     console.error("Erro ao registrar:", error);
     res.status(500).json({ message: "Erro ao registrar usuário." });
@@ -46,14 +48,19 @@ export async function login(req, res) {
       return res.status(401).json({ message: "Senha incorreta." });
     }
 
-    const token = jwt.sign({ userId: user.id, role: user.role }, process.env.JWT_SECRET, {
-      expiresIn: "7d",
-    });
+    const token = jwt.sign(
+      { userId: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      {
+        expiresIn: "7d",
+      }
+    );
 
     res
       .cookie("token", token, {
         httpOnly: true,
-        sameSite: "Lax",
+        secure: true,
+        sameSite: "None",
         maxAge: 1000 * 60 * 60 * 24 * 7,
       })
       .status(200)

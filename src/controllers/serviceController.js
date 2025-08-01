@@ -1,14 +1,8 @@
 import { PrismaClient } from "@prisma/client";
 import multer from "multer";
-import { createClient } from "@supabase/supabase-js";
 import fs from "fs";
 
 const prisma = new PrismaClient();
-
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_API_KEY
-);
 
 const upload = multer({ dest: "uploads/" });
 export const uploadImageMiddleware = upload.single("image");

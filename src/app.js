@@ -32,7 +32,7 @@ const app = express();
 
 app.use(express.json());
 app.use(cors({
-  origin: [process.env.FRONTEND_URL, 'http://localhost:3000'],
+  origin: [process.env.FRONTEND_URL],
   credentials: true,
 }));
 app.use(cookieParser());
@@ -42,7 +42,7 @@ app.use(logger);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 
-app.use("/api/upload-image", uploadRoutes);
+// app.use("/api/upload-image", uploadRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admins', adminRoutes);
