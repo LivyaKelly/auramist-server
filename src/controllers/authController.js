@@ -16,18 +16,14 @@ export async function register(req, res) {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const newUser = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        phone,
-        role,
-      },
+      data: { name, email, password: hashedPassword, phone, role },
     });
 
-    res
-      .status(201)
-      .json({ message: "Usuário registrado com sucesso!", user: newUser });
+    // CORREÇÃO: Remove a senha do objeto antes de enviar a resposta.
+    const userResponse = { ...newUser };
+    delete userResponse.password;
+
+    res.status(201).json({ message: "Usuário registrado com sucesso!", user: userResponse });
   } catch (error) {
     console.error("Erro ao registrar:", error);
     res.status(500).json({ message: "Erro ao registrar usuário." });
@@ -51,24 +47,16 @@ export async function login(req, res) {
     const token = jwt.sign(
       { userId: user.id, role: user.role },
       process.env.JWT_SECRET,
-      {
-        expiresIn: "7d",
-      }
+      { expiresIn: "7d" }
     );
 
-    res
-      .cookie("token", token, {
-        httpOnly: true,
-        secure: true,
-        sameSite: "None",
-        maxAge: 1000 * 60 * 60 * 24 * 7,
-      })
-      .status(200)
-      .json({
-        message: "Login realizado com sucesso!",
-        name: user.name,
-        role: user.role,
-      });
+    // CORRETO: Envia o token na resposta para ser salvo no localStorage.
+    res.status(200).json({
+      message: "Login realizado com sucesso!",
+      token: token,
+      name: user.name,
+      role: user.role,
+    });
   } catch (error) {
     console.error("Erro ao fazer login:", error);
     res.status(500).json({ message: "Erro ao fazer login." });
@@ -83,13 +71,7 @@ export async function getCurrentUser(req, res) {
 
     const user = await prisma.user.findUnique({
       where: { id: req.userId },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        phone: true,
-        role: true,
-      },
+      select: { id: true, name: true, email: true, phone: true, role: true },
     });
 
     if (!user) {

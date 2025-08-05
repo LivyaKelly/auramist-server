@@ -6,5 +6,5 @@ export async function getAppointmentsByUser(userId) {
     where: { clientId: userId },
     include: { service: true, professional: true },
     orderBy: { date: "asc" },
-  });
+  });  
 }
