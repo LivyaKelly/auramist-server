@@ -53,7 +53,7 @@ model Service {
 
   professional     User          @relation("ProfessionalServices", fields: [professionalId], references: [id])
 
-  createdAt        DateTime      @default(now())
+  createdAt        DateTime      @default(now()) // <-- ADICIONE ESTA LINHA
 }
 
 enum Status {
