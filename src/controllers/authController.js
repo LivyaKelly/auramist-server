@@ -1,12 +1,23 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import fs from "fs";
 
 const prisma = new PrismaClient();
 
 export async function register(req, res) {
   try {
     const { name, email, password, phone, role } = req.body;
+    let profilePictureUrl = null;
+
+    // Processa a imagem se ela foi enviada
+    if (req.file) {
+      const filePath = req.file.path;
+      const imageBuffer = fs.readFileSync(filePath);
+      const base64Image = imageBuffer.toString("base64");
+      profilePictureUrl = `data:${req.file.mimetype};base64,${base64Image}`;
+      fs.unlinkSync(filePath); // Apaga o arquivo temporário
+    }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
     if (existingUser) {
@@ -15,11 +26,18 @@ export async function register(req, res) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    // Cria o usuário com a URL da foto
     const newUser = await prisma.user.create({
-      data: { name, email, password: hashedPassword, phone, role },
+      data: {
+        name,
+        email,
+        password: hashedPassword,
+        phone,
+        role,
+        profilePictureUrl, // Salva a imagem no campo correto
+      },
     });
 
-    // CORREÇÃO: Remove a senha do objeto antes de enviar a resposta.
     const userResponse = { ...newUser };
     delete userResponse.password;
 
@@ -29,7 +47,6 @@ export async function register(req, res) {
     res.status(500).json({ message: "Erro ao registrar usuário." });
   }
 }
-
 export async function login(req, res) {
   try {
     const { email, password } = req.body;

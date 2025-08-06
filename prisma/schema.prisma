@@ -21,10 +21,10 @@ model User {
   password            String
   phone               String?
   role                Role      @default(CLIENT)
+  profilePictureUrl       String?
   hasCompletedService Boolean   @default(false)
   createdAt           DateTime  @default(now())
   reviews             Review[]
-
   clientAppointments       Appointment[] @relation("ClientAppointments")
   professionalAppointments Appointment[] @relation("ProfessionalAppointments")
 

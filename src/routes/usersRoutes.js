@@ -1,22 +1,24 @@
 import express from "express";
 import verifyToken from "../middlewares/verifyToken.js";
-import { PrismaClient } from "@prisma/client";
+import { getProtectedUser, updateCurrentUser, updateUserPicture } from "../controllers/usersController.js";
+
+// --- CORREÇÃO AQUI ---
+// 1. Importa o multer para lidar com o upload de ficheiros.
+import multer from "multer";
+
+// 2. Configura o multer para guardar os ficheiros temporariamente.
+const upload = multer({ dest: "uploads/" });
+// --------------------
 
 const router = express.Router();
-const prisma = new PrismaClient();
 
-router.get("/protected", verifyToken, async (req, res) => {
-  try {
-    const user = await prisma.user.findUnique({
-      where: { id: req.userId },
-      select: { id: true, name: true, email: true, phone: true, role: true },
-    });
-    if (!user)
-      return res.status(404).json({ message: "Usuário não encontrado" });
-    return res.status(200).json(user);
-  } catch (error) {
-    return res.status(500).json({ message: "Erro interno ao buscar usuário" });
-  }
-});
+// Rota para buscar os dados do utilizador (GET)
+router.get("/protected", verifyToken, getProtectedUser);
+
+// Rota para atualizar os dados do perfil (nome, telefone, email)
+router.put("/protected", verifyToken, updateCurrentUser);
+
+// Rota para atualizar apenas a foto de perfil
+router.put("/picture", verifyToken, upload.single('profilePicture'), updateUserPicture);
 
 export default router;

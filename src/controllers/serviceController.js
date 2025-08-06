@@ -132,18 +132,35 @@ export async function updateService(req, res) {
 }
 
 export async function deleteService(req, res) {
+  const serviceId = parseInt(req.params.id);
+
   try {
-    const serviceId = parseInt(req.params.id);
+    // Usamos uma transação para garantir que ambas as operações (apagar agendamentos e depois o serviço)
+    // aconteçam juntas. Se uma falhar, a outra é desfeita.
+    await prisma.$transaction(async (tx) => {
+      // 1. Apaga todos os agendamentos associados a este serviço
+      await tx.appointment.deleteMany({
+        where: {
+          serviceId: serviceId,
+        },
+      });
 
-    const service = await prisma.service.findUnique({ where: { id: serviceId } });
-    if (!service) {
-      return res.status(404).json({ message: "Serviço não encontrado." });
-    }
+      // 2. Agora que não há mais agendamentos, apaga o serviço
+      await tx.service.delete({
+        where: {
+          id: serviceId,
+        },
+      });
+    });
 
-    await prisma.service.delete({ where: { id: serviceId } });
-    res.json({ message: "Serviço deletado com sucesso." });
+    res.status(200).json({ message: "Serviço e agendamentos associados foram deletados com sucesso." });
+
   } catch (error) {
     console.error("Erro ao deletar serviço:", error);
+    // Verifica se o erro foi porque o serviço não foi encontrado
+    if (error.code === 'P2025') {
+       return res.status(404).json({ message: "Serviço não encontrado." });
+    }
     res.status(500).json({ message: "Erro ao deletar serviço." });
   }
 }
