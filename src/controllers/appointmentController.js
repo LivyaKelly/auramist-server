@@ -1,13 +1,13 @@
   import { PrismaClient } from "@prisma/client";
   const prisma = new PrismaClient();
 
-  export async function createAppointment(req, res) {
+ export async function createAppointment(req, res) {
   try {
     const clientId = req.userId;
-    const { serviceId, date, time } = req.body;
+    const { serviceId, date, time } = req.body; 
 
     if (!serviceId || !date || !time) {
-      return res.status(400).json({ mensagem: "Campos obrigatórios faltando." });
+      return res.status(400).json({ mensagem: "Campos obrigatórios em falta." });
     }
 
     const service = await prisma.service.findUnique({
@@ -18,13 +18,12 @@
       return res.status(404).json({ mensagem: "Serviço não encontrado." });
     }
 
-    const adjustedDate = new Date(`${date}T12:00:00`); 
+    const appointmentDateTime = new Date(`${date}T${time}:00`);
 
     const conflict = await prisma.appointment.findFirst({
       where: {
         professionalId: service.professionalId,
-        date: adjustedDate,
-        time,
+        date: appointmentDateTime,
       },
     });
 
@@ -37,8 +36,8 @@
         clientId,
         professionalId: service.professionalId,
         serviceId: service.id,
-        date: adjustedDate, 
-        time,
+        date: appointmentDateTime, 
+        time, 
         status: "PENDENTE",
       },
     });
@@ -48,6 +47,7 @@
       agendamento: newAppointment,
     });
   } catch (err) {
+    console.error("Erro ao criar agendamento:", err)
     return res.status(500).json({
       mensagem: "Erro ao criar agendamento.",
       error: err.message || err,

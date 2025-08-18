@@ -6,7 +6,6 @@ import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import fs from 'fs';
 
-// Importações de Swagger, middlewares e rotas
 const swaggerDocument = JSON.parse(fs.readFileSync('./config/swagger-output.json', 'utf8'));
 import swaggerUi from 'swagger-ui-express';
 import logger from './middlewares/logger.js';
@@ -20,14 +19,12 @@ import appointmentRoutes from './routes/appointmentRoutes.js';
 
 const app = express();
 
-// --- Middlewares Globais ---
 app.use(express.json());
 app.use(cookieParser());
 
-// Configuração de CORS para aceitar local e produção
 const allowedOrigins = [
-  process.env.FRONTEND_URL, // Sua URL de produção (ex: https://auramist.vercel.app)
-  'http://localhost:3000'   // CORRIGIDO: URL de desenvolvimento do seu front-end
+  process.env.FRONTEND_URL, 
+  'http://localhost:3000'   
 ];
 
 app.use(cors({
@@ -43,10 +40,8 @@ app.use(cors({
 
 app.use(logger);
 
-// Documentação da API com Swagger
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
-// --- Rotas da Aplicação ---
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/admins', adminRoutes);
@@ -55,8 +50,7 @@ app.use('/api/services', serviceRoutes);
 app.use('/api/appointments', appointmentRoutes);
 
 
-// --- Inicialização do Servidor ---
-const PORT = process.env.PORT || 3001; // CORRIGIDO: A porta padrão do back-end local agora é 3001
+const PORT = process.env.PORT || 3001; 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📚 Documentação da API: http://localhost:${PORT}/api-docs`);

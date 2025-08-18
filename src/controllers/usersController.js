@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 import fs from "fs";
 
-// Função para buscar os dados do usuário autenticado
 export async function getProtectedUser(req, res) {
   try {
     const user = await prisma.user.findUnique({
@@ -26,7 +25,6 @@ export async function getProtectedUser(req, res) {
   }
 }
 
-// Função para atualizar os dados do usuário autenticado
 export async function updateCurrentUser(req, res) {
   try {
     const { name, phone } = req.body;
@@ -35,7 +33,7 @@ export async function updateCurrentUser(req, res) {
     const updatedUser = await prisma.user.update({
       where: { id: userId },
       data: { name, phone },
-      select: { // Garante que a senha não seja retornada
+      select: { 
         id: true,
         name: true,
         email: true,

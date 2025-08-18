@@ -10,13 +10,12 @@ export async function register(req, res) {
     const { name, email, password, phone, role } = req.body;
     let profilePictureUrl = null;
 
-    // Processa a imagem se ela foi enviada
     if (req.file) {
       const filePath = req.file.path;
       const imageBuffer = fs.readFileSync(filePath);
       const base64Image = imageBuffer.toString("base64");
       profilePictureUrl = `data:${req.file.mimetype};base64,${base64Image}`;
-      fs.unlinkSync(filePath); // Apaga o arquivo temporário
+      fs.unlinkSync(filePath); 
     }
 
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -26,7 +25,6 @@ export async function register(req, res) {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Cria o usuário com a URL da foto
     const newUser = await prisma.user.create({
       data: {
         name,
@@ -34,7 +32,7 @@ export async function register(req, res) {
         password: hashedPassword,
         phone,
         role,
-        profilePictureUrl, // Salva a imagem no campo correto
+        profilePictureUrl, 
       },
     });
 
@@ -67,7 +65,6 @@ export async function login(req, res) {
       { expiresIn: "7d" }
     );
 
-    // CORRETO: Envia o token na resposta para ser salvo no localStorage.
     res.status(200).json({
       message: "Login realizado com sucesso!",
       token: token,
