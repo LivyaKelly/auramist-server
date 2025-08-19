@@ -2,7 +2,6 @@ import { PrismaClient } from "@prisma/client";
 import { DateTime } from "luxon";
 const prisma = new PrismaClient();
 
-// --- FUNÇÃO DE CRIAR CORRIGIDA ---
 export async function createAppointment(req, res) {
   try {
     const clientId = req.userId;
@@ -20,12 +19,8 @@ export async function createAppointment(req, res) {
       return res.status(404).json({ mensagem: "Serviço não encontrado." });
     }
 
-    // 2. CORREÇÃO DA DATA COM LUXON
-    // A Luxon entende a string, aplica o fuso horário do Brasil,
-    // e converte para um objeto Date que o Prisma entende.
     const appointmentDateTime = DateTime.fromISO(`${date}T${time}:00`, { zone: 'America/Sao_Paulo' }).toJSDate();
 
-    // O resto do código continua igual...
     const conflict = await prisma.appointment.findFirst({
       where: {
         professionalId: service.professionalId,
@@ -60,7 +55,7 @@ export async function createAppointment(req, res) {
     });
   }
 }
-// --- FUNÇÃO DE ATUALIZAR CORRIGIDA ---
+
 export async function updateAppointment(req, res) {
   try {
     const id = parseInt(req.params.id);
@@ -68,24 +63,20 @@ export async function updateAppointment(req, res) {
     
     const dataToUpdate = {};
 
-    // Se a data ou a hora estão sendo atualizadas, precisamos recalcular o timestamp
     if (date || time) {
       const currentAppointment = await prisma.appointment.findUnique({ where: { id } });
       if (!currentAppointment) {
         return res.status(404).json({ mensagem: "Agendamento não encontrado." });
       }
 
-      // Pega a nova data/hora se ela foi enviada, senão mantém a antiga
       const newDate = date || currentAppointment.date.toISOString().split('T')[0];
       const newTime = time || currentAppointment.time;
 
-      // Usa a Luxon para criar a nova data com o fuso horário do Brasil
       dataToUpdate.date = DateTime.fromISO(`${newDate}T${newTime}:00`, { 
         zone: 'America/Sao_Paulo' 
       }).toJSDate();
     }
     
-    // Adiciona os outros campos ao objeto de atualização se eles foram enviados
     if (time !== undefined) dataToUpdate.time = time;
     if (status !== undefined) dataToUpdate.status = status;
 
@@ -107,8 +98,6 @@ export async function updateAppointment(req, res) {
     return res.status(500).json({ mensagem: "Erro ao atualizar agendamento.", error: err.message });
   }
 }
-
-// --- DEMAIS FUNÇÕES (SEM ALTERAÇÕES CRÍTICAS) ---
 
 export async function getAllAppointments(req, res) {
   try {
@@ -171,7 +160,6 @@ export const getAppointmentsByClient = async (req, res) => {
   }
 };
 
-// 4. MELHORIA: Unifiquei as duas funções de buscar agendamentos do profissional em uma só.
 export async function getProfessionalAppointments(req, res) {
   try {
     const professionalId = req.userId;
