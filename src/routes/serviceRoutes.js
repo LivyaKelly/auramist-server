@@ -16,7 +16,9 @@ router.post("/", verifyToken, authorizeService, uploadImageMiddleware, createSer
 
 router.get("/", getAllServices);
 router.get("/my", verifyToken, authorizeService, getMyServices);
-router.put("/:id", verifyToken, authorizeService, updateService);
+
+router.put("/:id", verifyToken, authorizeService, uploadImageMiddleware, updateService);
+
 router.delete("/:id", verifyToken, authorizeService, deleteService);
 
 export default router;
